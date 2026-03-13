@@ -32,38 +32,37 @@ def blur_image(
         return image.copy()
 
     pad_size = kernel_size // 2
-    h, w = image.shape[:2]
-    padded = pad_image(image, pad_size)
     window_area = kernel_size * kernel_size
 
     if image.ndim == 2:
+        h, w = image.shape
+        padded = pad_image(image, pad_size).astype(np.uint64, copy=False)
         integral = np.zeros((padded.shape[0] + 1, padded.shape[1] + 1), dtype=np.uint64)
-        integral[1:, 1:] = np.cumsum(
-            np.cumsum(padded, axis=0, dtype=np.uint64), axis=1, dtype=np.uint64
+        integral[1:, 1:] = np.cumsum(np.cumsum(padded, axis=0), axis=1)
+
+        window_sums = (
+            integral[kernel_size : kernel_size + h, kernel_size : kernel_size + w]
+            - integral[:h, kernel_size : kernel_size + w]
+            - integral[kernel_size : kernel_size + h, :w]
+            + integral[:h, :w]
         )
+        return (window_sums // window_area).astype(np.uint8)
 
-        A = integral[:h, :w]
-        B = integral[:h, kernel_size : kernel_size + w]
-        C = integral[kernel_size : kernel_size + h, :w]
-        D = integral[kernel_size : kernel_size + h, kernel_size : kernel_size + w]
+    if image.ndim == 3:
+        h, w, c = image.shape
+        padded = pad_image(image, pad_size).astype(np.uint64, copy=False)
+        integral = np.zeros((padded.shape[0] + 1, padded.shape[1] + 1, c), dtype=np.uint64)
+        integral[1:, 1:, :] = np.cumsum(np.cumsum(padded, axis=0), axis=1)
 
-        window_sums = D - C - B + A
-        return (window_sums / window_area).astype(np.uint8)
+        window_sums = (
+            integral[kernel_size : kernel_size + h, kernel_size : kernel_size + w, :]
+            - integral[:h, kernel_size : kernel_size + w, :]
+            - integral[kernel_size : kernel_size + h, :w, :]
+            + integral[:h, :w, :]
+        )
+        return (window_sums // window_area).astype(np.uint8)
 
-    integral = np.zeros(
-        (padded.shape[0] + 1, padded.shape[1] + 1, padded.shape[2]), dtype=np.uint64
-    )
-    integral[1:, 1:, :] = np.cumsum(
-        np.cumsum(padded, axis=0, dtype=np.uint64), axis=1, dtype=np.uint64
-    )
-
-    A = integral[:h, :w, :]
-    B = integral[:h, kernel_size : kernel_size + w, :]
-    C = integral[kernel_size : kernel_size + h, :w, :]
-    D = integral[kernel_size : kernel_size + h, kernel_size : kernel_size + w, :]
-
-    window_sums = D - C - B + A
-    return (window_sums / window_area).astype(np.uint8)
+    raise ValueError
 
 
 if __name__ == "__main__":
