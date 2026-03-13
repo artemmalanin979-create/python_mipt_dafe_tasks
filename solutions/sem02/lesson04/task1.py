@@ -25,6 +25,29 @@ def blur_image(
     kernel_size: int,
 ) -> np.ndarray:
     # ваш код
+    if kernel_size < 1 or kernel_size % 2 == 0:
+        raise ValueError
+    
+    pad_size = kernel_size // 2
+    padded_image = pad_image(image, pad_size)
+
+    if image.ndim == 2:
+        h, w = image.shape
+        blur_image = np.zeros_like(image, dtype=np.float64)
+
+        for i in range(h):
+            for j in range(w):
+                blur_image[i, j] = np.mean(padded_image[i : i + kernel_size, j : j + kernel_size])
+    
+    elif image.ndim == 3:
+        h, w, c = image.shape
+        blur_image = np.zeros_like(image, dtype=np.float64)
+
+        for i in range(h): 
+            for j in range(w):
+                    blur_image[i, j, :] = np.mean(padded_image[i : i + kernel_size, j : j + kernel_size, :], axis=(0, 1))
+        
+    image = blur_image.astype(np.uint8)
     return image
 
 
