@@ -3,7 +3,21 @@ import numpy as np
 
 def pad_image(image: np.ndarray, pad_size: int) -> np.ndarray:
     # ваш код
-    return image
+    if pad_size < 1:
+        raise ValueError
+    
+    if image.ndim == 2:
+        h, w = image.shape
+        padded_image = np.zeros((h + 2 * pad_size, w + 2 * pad_size), dtype=image.dtype)
+        padded_image[pad_size : pad_size + h, pad_size : pad_size + w] = image
+    elif image.ndim == 3:
+        h, w, c = image.shape
+        padded_image = np.zeros((h + 2 * pad_size, w + 2 * pad_size, c), dtype=image.dtype)
+        padded_image[pad_size : pad_size + h, pad_size : pad_size + w, :] = image
+    else:
+        raise ValueError
+    
+    return padded_image
 
 
 def blur_image(
