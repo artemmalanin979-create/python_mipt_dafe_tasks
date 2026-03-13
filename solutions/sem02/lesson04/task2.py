@@ -5,30 +5,28 @@ def get_dominant_color_info(
     image: np.ndarray[np.uint8],
     threshold: int = 5,
 ) -> tuple[np.uint8, float]:
+    # ваш код
     if threshold < 1:
         raise ValueError("threshold must be positive")
 
-    total_pixels = image.size
-    histogram = np.bincount(image.flatten(), minlength=256)
-    prefix_sums = np.zeros(257, dtype=np.int64)
-    prefix_sums[1:] = np.cumsum(histogram)
+    pixels = image.flatten()
 
-    delta = threshold - 1
-    unique_values = np.unique(image)
+    value_counts = np.bincount(pixels, minlength=256).astype(np.int64)
+    color_indices = np.arange(256, dtype=np.int32).reshape(-1, 1)
 
-    max_count = -1
-    dominant_color = np.uint8(0)
+    is_present = value_counts > 0
 
-    for value in unique_values:
-        color = int(value)
-        left = max(0, color - delta)
-        right = min(255, color + delta)
-        count = prefix_sums[right + 1] - prefix_sums[left]
+    pairwise_diffs = np.abs(color_indices - color_indices.T)
+    within_threshold = pairwise_diffs < threshold
 
-        if count > max_count:
-            max_count = count
-            dominant_color = np.uint8(color)
+    neighborhood_sums = np.sum(within_threshold * value_counts, axis=1)
 
-    percentage = (max_count / total_pixels) * 100
+    ranking_scores = neighborhood_sums * (image.size + 1) + value_counts
+    ranking_scores[~is_present] = -1
+
+    dominant_idx = np.argmax(ranking_scores)
+
+    dominant_color = np.uint8(dominant_idx)
+    percentage = float(neighborhood_sums[dominant_idx] / image.size)
 
     return dominant_color, percentage
