@@ -34,8 +34,12 @@ def visualize_diagrams(
     if diagram_type == "hist":
         axis_hor.hist(abscissa, bins=50, color="cornflowerblue", density=True, alpha=0.5)
         axis_vert.hist(
-            ordinates, bins=50, color="cornflowerblue",
-            orientation="horizontal", density=True, alpha=0.5,
+            ordinates,
+            bins=50,
+            color="cornflowerblue",
+            orientation="horizontal",
+            density=True,
+            alpha=0.5,
         )
         axis_hor.invert_yaxis()
         axis_vert.invert_xaxis()
@@ -44,12 +48,18 @@ def visualize_diagrams(
         box_props = dict(facecolor="lightsteelblue")
         median_props = dict(color="k")
         axis_hor.boxplot(
-            abscissa, vert=False, patch_artist=True,
-            boxprops=box_props, medianprops=median_props,
+            abscissa,
+            vert=False,
+            patch_artist=True,
+            boxprops=box_props,
+            medianprops=median_props,
         )
         axis_vert.boxplot(
-            ordinates, vert=True, patch_artist=True,
-            boxprops=box_props, medianprops=median_props,
+            ordinates,
+            vert=True,
+            patch_artist=True,
+            boxprops=box_props,
+            medianprops=median_props,
         )
         axis_hor.set_yticks([])
         axis_vert.set_xticks([])
@@ -71,7 +81,6 @@ def visualize_diagrams(
     axis_vert.invert_xaxis()
     axis_vert.tick_params(axis="y", labelleft=False)
     axis_hor.tick_params(axis="x", labelbottom=False)
-
 
 
 if __name__ == "__main__":
